@@ -127,6 +127,14 @@ Explore how the workflow operates in real-time:
 
 ---
 
+## 📊 Sample Data
+Use these files to simulate the workflow locally:
+- [Inventory Sheet](sample-data/inventory-sheet.csv)
+- [Alert Log](sample-data/alert-log.csv)
+- [Workflow Log](sample-data/workflow-log.csv)
+
+---
+
 ## 🛠️ Setup Instructions
 1. Clone this repository and import the workflow into your n8n instance.
 2. Configure credentials for:
