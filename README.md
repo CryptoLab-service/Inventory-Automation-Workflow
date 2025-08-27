@@ -26,27 +26,27 @@ This workflow runs daily at 8 AM and performs the following:
 
 ```mermaid
 graph TD
-    A[Schedule Trigger (8AM)] --> B[Get Inventory Log]
-    B --> C[Archive Snapshot]
-    C --> D[Assign Priority]
-    D --> E[Data Validation]
-    E --> F[Compare Timestamp]
-    F --> G[Throttle Filter]
-    G --> H[Filter Low Stock]
-    H --> I[Loop Over Items]
-    I --> J[Update Timestamp]
-    I --> K[Map Priority Index]
-    K --> L[Message Alert (Telegram)]
-    I --> M[Order Placement (Slack)]
-    M --> N[Order Confirmation (Slack)]
-    N --> O[Payment Invoice (Gmail)]
-    M --> P[Workflow Logs]
+    A["Schedule Trigger - 8AM"] --> B["Get Inventory Log"]
+    B --> C["Archive Snapshot"]
+    C --> D["Assign Priority"]
+    D --> E["Data Validation"]
+    E --> F["Compare Timestamp"]
+    F --> G["Throttle Filter"]
+    G --> H["Filter Low Stock"]
+    H --> I["Loop Over Items"]
+    I --> J["Update Timestamp"]
+    I --> K["Map Priority Index"]
+    K --> L["Message Alert - Telegram"]
+    I --> M["Order Placement - Slack"]
+    M --> N["Order Confirmation - Slack"]
+    N --> O["Payment Invoice - Gmail"]
+    M --> P["Workflow Logs"]
     N --> P
     O --> P
-    M --> Q[Error Handling]
+    M --> Q["Error Handling"]
     N --> Q
     O --> Q
-```
+
 
 ---
 
