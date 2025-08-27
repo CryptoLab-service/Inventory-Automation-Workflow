@@ -1,1 +1,3 @@
-
+Timestamp,SKU,Product Name,Quantity,ReorderPoint,Vendor,Alert Sent
+2025-08-27T08:00:00Z,FSN-002,Fabric Softener,5,15,CleanCo,Yes
+2025-08-27T08:00:00Z,IRS-005,Ironing Spray,2,10,FreshMist,Yes
