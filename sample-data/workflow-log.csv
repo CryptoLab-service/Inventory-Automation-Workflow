@@ -1,1 +1,7 @@
-
+Timestamp,Step,Status,Details
+2025-08-27T08:00:00Z,Inventory Fetch,Success,Retrieved 5 items from Google Sheets
+2025-08-27T08:00:01Z,Validation,Success,All SKUs and quantities valid
+2025-08-27T08:00:02Z,Alert Trigger,Success,Sent 2 Telegram alerts
+2025-08-27T08:00:03Z,Order Placement,Success,Slack order sent to CleanCo
+2025-08-27T08:00:04Z,Invoice Delivery,Success,Gmail invoice sent to vendor
+2025-08-27T08:00:05Z,Logging,Success,Workflow actions logged to Google Sheets
