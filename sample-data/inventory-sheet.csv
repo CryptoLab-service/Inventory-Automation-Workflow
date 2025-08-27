@@ -1,1 +1,6 @@
-a
+Product Name,SKU,Quantity,ReorderPoint,Vendor,Priority
+Detergent Pack,DTP-001,12,20,CleanCo,Medium
+Fabric Softener,FSN-002,5,15,CleanCo,Critical
+Laundry Bags,LBG-003,30,25,PackPro,Low
+Bleach Bottle,BLB-004,8,10,CleanCo,High
+Ironing Spray,IRS-005,2,10,FreshMist,Critical
