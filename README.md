@@ -119,6 +119,14 @@ Please confirm this order and provide an estimated delivery date.
 
 ---
 
+## 🎬 Demo Walkthrough
+Explore how the workflow operates in real-time:
+- [Workflow Overview](demo-assets/irw1.jpeg)
+- [Alert Trigger](demo-assets/irw2.jpeg)
+- [Slack Order Placement](demo-assets/irw5.jpg)
+
+---
+
 ## 🛠️ Setup Instructions
 1. Clone this repository and import the workflow into your n8n instance.
 2. Configure credentials for:
