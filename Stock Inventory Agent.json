@@ -1,0 +1,922 @@
+{
+  "name": "Stock Inventory Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Custom JavaScript validation\nitems.forEach(item => {\n  if (!item.json.SKU || \n      isNaN(item.json.Quantity) || \n      isNaN(item.json.ReorderPoint)) {\n    item.json.invalidRecord = true;\n  }\n});\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -320
+      ],
+      "id": "82d12dc9-425f-49ff-bfee-d7586911164f",
+      "name": "Data Validation"
+    },
+    {
+      "parameters": {
+        "batchSize": 20,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1792,
+        -320
+      ],
+      "id": "034b24b7-e2fd-4343-9ebc-6a92830d8968",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "const thresholdHours = 24;\nconst now = new Date();\n\nitems.forEach(item => {\n  const lastAlert = item.json.LastAlertTimestamp\n    ? new Date(item.json.LastAlertTimestamp)\n    : null;\n\n  if (!lastAlert || (now - lastAlert) / (1000 * 60 * 60) >= thresholdHours) {\n    item.json.shouldAlert = true;\n  } else {\n    item.json.shouldAlert = false;\n  }\n});\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -320
+      ],
+      "id": "6b40c54a-cd72-4f32-9e3b-2b5316a2fa40",
+      "name": "Compare Timestamp"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "10c17dd4-63c6-42db-b935-6cfd0e8d9b2f",
+              "leftValue": "={{ $json.shouldAlert }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        -320
+      ],
+      "id": "08504b1d-ff88-4000-a65f-cc2ebb4392ee",
+      "name": "Throttle Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "items.forEach(item => {\n  const category = item.json.Category || \"\";\n  const vendor = item.json.Vendor || \"\";\n\n  if (category === \"Gadgets\" || vendor === \"BadgetHub NG\") {\n    item.json.Priority = \"Critical\";\n  } else if (category === \"Office Supplies\") {\n    item.json.Priority = \"Moderate\";\n  } else {\n    item.json.Priority = \"Low\";\n  }\n});\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -320
+      ],
+      "id": "696d3ed8-d387-45a6-89b9-6cc6ec0d965f",
+      "name": "Assign Priority"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA",
+          "mode": "list",
+          "cachedResultName": "InventoryData",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2123082269,
+          "mode": "list",
+          "cachedResultName": "Inventory Snapshot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit#gid=2123082269"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product Name": "={{ $json['Product Name'] }}",
+            "Quantity": "={{ $json.Quantity }}",
+            "ReorderPoint": "={{ $json.ReorderPoint }}",
+            "Timestamp": "={{ $now }}",
+            "Vendor": "={{ $json.Vendor }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ReorderPoint",
+              "displayName": "ReorderPoint",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor",
+              "displayName": "Vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        -320
+      ],
+      "id": "6f736565-004b-414b-8ac1-afbcd9e52fec",
+      "name": "Archive Snapshot",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wXAfa4Y67s1bUqQ2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9cd2f761-cd68-4990-b77b-1fdcc75a1132",
+              "leftValue": "={{ $json.Quantity }}",
+              "rightValue": "={{ $json.ReorderPoint }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "c054a465-4c28-4dc8-a53e-009aeac45737",
+              "leftValue": "={{ $json.LastAlertTimestamp }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        -320
+      ],
+      "id": "4c16c4ca-6df7-473a-bef7-b2eb851773f9",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "chatId": "1749916690",
+        "text": "=🚨 *Inventory Alert: Low Stock Detected*\n📦 *Product:* {{ $json[\"Product Name\"] }}\n🔢 *SKU:* {{ $json.SKU }}\n📉 *Current Stock:* {{ $json.Quantity }} units\n📊 *Reorder Point:* {{ $json.ReorderPoint }} units\n👤 *Supplier:* {{ $json.Vendor }}\n🟥 *Priority:* Critical\n\n⚠️ *Action Required:*\nStock is below the reorder threshold. Please review and restock promptly.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2240,
+        -560
+      ],
+      "id": "40bce73b-1e33-4105-87e1-6c73571d2b2c",
+      "name": "Message Alert (Critical)",
+      "webhookId": "50681ebd-3067-4889-b310-c229fe33cba0",
+      "credentials": {
+        "telegramApi": {
+          "id": "rXp36qkhYrIY66zd",
+          "name": "Telegram Feedbot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        -320
+      ],
+      "id": "e924d2e7-d41c-46ab-b3e6-5c0fa39c42cd",
+      "name": "Schedule Trigger (*am)"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA",
+          "mode": "list",
+          "cachedResultName": "InventoryData",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1606345030,
+          "mode": "list",
+          "cachedResultName": "Alert Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit#gid=1606345030"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "SKU": "={{ $json.SKU }}",
+            "Product Name": "={{ $json[\"Product Name\"] }}",
+            "Current Qty": "={{ $json.Quantity }}",
+            "Status": "Alert Sent",
+            "Timestamp": "={{ $now }}",
+            "Vendor": "={{ $json.Vendor }}",
+            "ReorderPoint": "={{ $json.ReorderPoint }}"
+          },
+          "matchingColumns": [
+            "SKU"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vendor",
+              "displayName": "Vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Current Qty",
+              "displayName": "Current Qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ReorderPoint",
+              "displayName": "ReorderPoint",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2016,
+        -368
+      ],
+      "id": "1cc468bc-3a3a-4c06-9627-49af6116d646",
+      "name": "Update Timestamp",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wXAfa4Y67s1bUqQ2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "items.forEach(item => {\n  const priority = item.json.Priority;\n\n  if (priority === \"Critical\") {\n    item.json.PriorityIndex = 0;\n  } else if (priority === \"Moderate\") {\n    item.json.PriorityIndex = 1;\n  } else {\n    item.json.PriorityIndex = 2;\n  }\n});\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        -560
+      ],
+      "id": "d2c56d00-49bd-4ee4-ba3a-57c32f1dd1e4",
+      "name": "Map Priority Index"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA",
+          "mode": "list",
+          "cachedResultName": "InventoryData",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Inventory Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        -320
+      ],
+      "id": "0dc87a3c-2cb3-4db9-bddd-3f30223d8d86",
+      "name": "Get Inventory log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wXAfa4Y67s1bUqQ2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09957QTGLF",
+          "mode": "list",
+          "cachedResultName": "all-ai-agents"
+        },
+        "text": "=📦 *New Order Placement*\n📦 *Product:* {{ $json[\"Product Name\"] }}\n🔢 *SKU:* {{ $json.SKU }}\n📉 *Quantity to Order:* {{ $json.ReorderPoint - $json.Quantity }} units\n👤 *Supplier:* {{ $json.Vendor }}\n\n⚠️ *Action Required:*\nPlease confirm this order and provide an estimated delivery date.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2016,
+        -80
+      ],
+      "id": "252a8dd1-f6cb-4efa-ae40-46b4cdf2fdb5",
+      "name": "Order Placement",
+      "webhookId": "0ecddc17-a4cd-4ab5-91e5-e1800a5f65eb",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "QSbqSZJMPh6838N6",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09957QTGLF",
+          "mode": "list",
+          "cachedResultName": "all-ai-agents"
+        },
+        "text": "=✅ *Order Confirmation*\n\n📦 *Product:* {{ $json[\"Product Name\"] }}\n🔢 *SKU:* {{ $json.SKU }}\n📉 *Quantity Ordered:* {{ $json.ReorderPoint - $json.Quantity }} units\n👤 *Supplier:* {{ $json.Vendor }}\n📅 *Estimated Delivery Date:* {{ $json.EstimatedDeliveryDate }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2240,
+        -64
+      ],
+      "id": "5c20818a-53ea-478e-b5fb-2c81d5230a74",
+      "name": "Order Confirmation",
+      "webhookId": "0ecddc17-a4cd-4ab5-91e5-e1800a5f65eb",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "QSbqSZJMPh6838N6",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "oluwalowojohn@gmail.com",
+        "subject": "=🧾 Payment Invoice for Order #{{ $json.OrderID }}",
+        "emailType": "text",
+        "message": "=🧾 *Payment Invoice*\n📅 *Date:* {{ $now }}\n📦 *Product:* {{ $json[\"Product Name\"] }}\n🔢 *SKU:* {{ $json.SKU }}\n📉 *Quantity:* {{ $json.ReorderPoint - $json.Quantity }} units\n💰 *Amount:* {{ $json.Amount }}\n📅 *Due Date:* {{ $json.DueDate }}\n🏦 *Payment Method:* {{ $json.PaymentMethod }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2464,
+        -256
+      ],
+      "id": "a32f3fed-64c4-449d-8f8d-2d92a0681a83",
+      "name": "Payment Invoice",
+      "webhookId": "e180b752-2105-4748-8a5f-04fcd7bcb682",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "d5ljNKIIRxJqX2vl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA",
+          "mode": "list",
+          "cachedResultName": "InventoryData",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1219633555,
+          "mode": "list",
+          "cachedResultName": "Workflow Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rjEjf4SHTPCw9yk1vgsbLvABGRNYfXt58OeCLxsxwvA/edit#gid=1219633555"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now }}",
+            "SKU": "={{ $json.SKU }}",
+            "Vendor": "={{ $json.Vendor }}",
+            "Product Name": "={{ $('Get Vendor Contact').item.json['Product Name'] }}",
+            "Address": "={{ $('Get Vendor Contact').item.json.Address }}, {{ $('Get Vendor Contact').item.json.Email }}",
+            "Phone No.": "={{ $('Get Vendor Contact').item.json['Phone Number'] }}",
+            "ReOrder Point": "={{ $('Loop Over Items').item.json.ReorderPoint }}",
+            "Receipt Sent": "="
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Vendor",
+              "displayName": "Vendor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone No.",
+              "displayName": "Phone No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "SKU",
+              "displayName": "SKU",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ReOrder Point",
+              "displayName": "ReOrder Point",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order Placed",
+              "displayName": "Order Placed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice Sent",
+              "displayName": "Invoice Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Receipt Sent",
+              "displayName": "Receipt Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total Stock",
+              "displayName": "Total Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2688,
+        48
+      ],
+      "id": "fa9d9aa4-d87c-4a64-bdf7-01a6b6195f96",
+      "name": "Workflow Logs",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "wXAfa4Y67s1bUqQ2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  // Your existing code\n} catch (error) {\n  console.error('Error:', error);\n  // Optionally, send an error notification via Slack or Email\n}\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2688,
+        -224
+      ],
+      "id": "673ee654-e34c-4932-b808-9547413b957b",
+      "name": "Transaction Error Handling"
+    },
+    {
+      "parameters": {
+        "content": "## Stock Inventory System",
+        "height": 944,
+        "width": 3072,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "6443fac5-9476-4a9e-8657-292ab8648c92",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Data Validation": {
+      "main": [
+        [
+          {
+            "node": "Compare Timestamp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Update Timestamp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Map Priority Index",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Order Placement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Timestamp": {
+      "main": [
+        [
+          {
+            "node": "Throttle Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throttle Filter": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Priority": {
+      "main": [
+        [
+          {
+            "node": "Data Validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archive Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Assign Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Alert (Critical)": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger (*am)": {
+      "main": [
+        [
+          {
+            "node": "Get Inventory log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Priority Index": {
+      "main": [
+        [
+          {
+            "node": "Message Alert (Critical)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Inventory log": {
+      "main": [
+        [
+          {
+            "node": "Archive Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Placement": {
+      "main": [
+        [
+          {
+            "node": "Order Confirmation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Transaction Error Handling",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Workflow Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Payment Invoice",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Transaction Error Handling",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Workflow Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment Invoice": {
+      "main": [
+        [
+          {
+            "node": "Workflow Logs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Transaction Error Handling",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ede11081-2986-478e-a924-0027bfed5925",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db6a6a071dfca2e0d35fcf3e9f98b59e5ea7c188360bda9a81a90f32d133305b"
+  },
+  "id": "4tXaqaKAZJmBH1PL",
+  "tags": []
+}
